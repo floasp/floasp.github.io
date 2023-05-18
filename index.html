@@ -1,0 +1,231 @@
+<!doctype html>
+
+<head>
+
+	<title>FF Silber Ziehung</title>
+	<style>
+
+    .button {
+		background-color: #4CAF50; /* Green */
+		border: none;
+		color: white;
+		padding: 20px 50px;
+		text-align: center;
+		text-decoration: none;
+		display: inline-block;
+		font-size: 24px;
+	}
+
+    </style>
+
+</head>
+
+<body>
+	<!-- your content here... -->
+	<img id="img_stf", onclick="toggle('stf')">
+	<img id="img_wtf", onclick="toggle('wtf')">
+	<img id="img_atf", onclick="toggle('atf')">
+	<img id="img_ma", onclick="toggle('ma')">
+	<img id="img_gk", onclick="toggle('gk')">
+	<img id="img_pause0", onclick="toggle('pause0')">
+	<img id="img_pause1", onclick="toggle('pause1')">
+	<img id="img_pause2", onclick="toggle('pause2')">
+	</br>
+	<img id="img_stm", onclick="toggle('stm')">
+	<img id="img_wtm", onclick="toggle('wtm')">
+	<img id="img_atm", onclick="toggle('atm')">
+	<img id="img_me", onclick="toggle('me')">
+	<img id="img_pause3", onclick="toggle('pause3')">
+	<img id="img_pause4", onclick="toggle('pause4')">
+	<img id="img_pause5", onclick="toggle('pause5')">
+	<img id="img_pause6", onclick="toggle('pause6')">
+  
+	</br>
+	
+	<button type="button" class="button" onclick="pull()" id="button">Position ziehen!</button>
+	</br>
+  
+	<img id="img_pulled">
+	
+  
+	<script>
+		const positions = ["stf", "wtf", "atf", "ma", "gk", "pause0", "pause1", "pause2", 
+						   "stm", "wtm", "atm", "me", "pause3", "pause4", "pause5", "pause6"];
+	    const colors = ['rgba(255, 255, 0, 255)', 'rgba(0, 0, 255, 255)', 'rgba(255, 0, 0, 255)', 'rgba(255, 255, 255, 255)', 'rgba(255, 255, 255, 255)', 'rgba(255, 255, 255, 255)', 'rgba(255, 255, 255, 255)', 'rgba(255, 255, 255, 255)',
+						'rgba(255, 255, 0, 255)', 'rgba(0, 0, 255, 255)', 'rgba(255, 0, 0, 255)', 'rgba(255, 255, 255, 255)', 'rgba(255, 255, 255, 255)', 'rgba(255, 255, 255, 255)', 'rgba(255, 255, 255, 255)', 'rgba(255, 255, 255, 255)']
+	
+		const createImage = (boxsize, color, position, index) => {
+
+			const canvas = document.createElement('canvas')
+			canvas.width = boxsize
+			canvas.height = boxsize
+
+			const ctx = canvas.getContext('2d')
+			ctx.fillStyle = color
+			ctx.fillRect(0, 0, boxsize, boxsize)
+			
+			if ((index > 4 && index < 8) || (index > 11)){
+				ctx.font = boxsize*0.4+"px sans-serif";
+				ctx.fillStyle = "#000000"
+				const text_width = ctx.measureText("P"+position.slice(-1)).width;
+				ctx.fillText("P"+position.slice(-1), boxsize / 2 - text_width / 2, boxsize*0.63);
+			}
+			
+			ctx.beginPath();
+			let dx = boxsize / 10;
+			let dy = dx;
+			let radius = boxsize * 0.8 / 2;
+			ctx.arc(radius + dx, radius + dy, radius, 0, 2 * Math.PI, false);
+			ctx.lineWidth = boxsize / 10;
+			ctx.strokeStyle = '#000000';
+			ctx.stroke();
+			
+			if (index < 3){
+				ctx.beginPath();
+				let dx = boxsize / 10;
+				let dy = dx;
+				let radius = boxsize * 0.8 / 2;
+				ctx.arc(radius + dx, radius + dy, radius, 0, Math.PI, false);
+				ctx.lineWidth = boxsize / 10;
+				ctx.fillStyle = '#000000';
+				ctx.fill();
+			}
+			
+			if (position == "gk"){
+				ctx.beginPath();
+				let dx = boxsize / 10;
+				let dy = dx;
+				let radius = boxsize * 0.8 / 2;
+				ctx.arc(radius + dx, radius + dy, radius, 0, 2 * Math.PI, false);
+				ctx.lineWidth = boxsize / 10;
+				ctx.fillStyle = '#000000';
+				ctx.fill();
+			}
+			
+			if (position == "ma"){
+				ctx.beginPath();
+				let start = boxsize / 4;
+				let end = boxsize - start;
+				ctx.moveTo(start, start);
+				ctx.lineTo(end, end);
+				ctx.lineWidth = boxsize / 10;
+				ctx.stroke();
+				
+				ctx.beginPath();
+				ctx.moveTo(start, end);
+				ctx.lineTo(end, start);
+				ctx.lineWidth = boxsize / 10;
+				ctx.stroke();
+			}
+			if (position == "me"){
+				
+				ctx.beginPath();
+				let radius = boxsize / 12;
+				let dx = boxsize / 2 - radius;
+				let dy = dx;
+				ctx.arc(radius + dx, radius + dy, radius, 0, 2 * Math.PI, false);
+				ctx.lineWidth = boxsize / 10;
+				ctx.fillStyle = '#000000';
+				ctx.fill();
+			}
+
+			
+			const img = new Image(boxsize, boxsize)
+			img.src = canvas.toDataURL()
+
+			return img
+		}
+		
+		const toggle = (position) => {
+			if (available.includes(position)){
+				const index = available.indexOf(position);
+				if (index > -1) { // only splice array when item is found
+					available.splice(index, 1); // 2nd parameter means remove one item only
+				}
+				
+				var element = document.getElementById('img_'+position);
+				element.style.opacity = "0.1";
+				element.style.filter  = 'alpha(opacity=10)';
+			}
+			else{
+				available.push(position);
+				
+				var element = document.getElementById('img_'+position);
+				element.style.opacity = "1";
+				element.style.filter  = 'alpha(opacity=100)';
+			}
+			
+		}
+		
+		const pull = () => {
+			if (available.length > 0){
+				if (!started){
+					started = true;
+					startlist = available.slice();
+				}
+			
+				index = Math.floor(Math.random()*available.length);
+				position = available[index];
+				
+				const img_el = document.getElementById("img_pulled");
+				const img_pulled = document.getElementById('img_'+position);
+				
+				img_el.src = img_pulled.src;
+				
+				
+				toggle(position);
+				
+				if (available.length == 0){
+					const btn = document.getElementById("button");
+					btn.firstChild.data = "Neu Starten!";
+				}
+			}
+			else{
+				if (started){
+					const btn = document.getElementById("button");
+					btn.firstChild.data = "Position ziehen!";
+					started = false;
+					const img_el = document.getElementById("img_pulled");
+					img_el.src = "#";
+					for (let i = 0; i < startlist.length; i++){
+						toggle(startlist[i]);
+					}
+				}
+			
+			}
+			
+		}
+
+		//const img1El = document.getElementById('img_stf')
+		//const img2El = document.getElementById('img_stf')
+		//const img1 = createImage(100, 50)
+		//const img2 = createImage(20, 50)
+		//img1El.src = img1.src
+		//img2El.src = img2.src
+		
+		width = document.body.offsetWidth;
+		//console.log(width)
+		boxsize = (width - 40) / 8;
+		//console.log(boxsize)
+		
+		for (let i = 0; i < positions.length; i++){
+			
+			const img_el = document.getElementById("img_"+positions[i]);
+			const img = createImage(boxsize, colors[i], positions[i], i);
+			img_el.src = img.src;
+		}
+		
+		available = positions.slice();
+		
+		for (let i = 0; i < 7; i++){
+			toggle("pause"+i);
+		}
+		
+		started = false;
+		
+		
+		
+	
+	</script>
+</body>
+</html>
