@@ -1,27 +1,13 @@
 <!doctype html>
 
 <head>
-
+	<!-- Author:  @floasp -->
+	<!-- Version: 0.1     -->
 	<title>FF Silber Ziehung</title>
-	<style>
-
-    .button {
-		background-color: #4CAF50; /* Green */
-		border: none;
-		color: white;
-		padding: 50px 50px;
-		text-align: center;
-		text-decoration: none;
-		display: inline-block;
-		font-size: 24px;
-	}
-
-    </style>
 
 </head>
 
 <body>
-	<!-- your content here... -->
 	<img id="img_stf", onclick="toggle('stf')">
 	<img id="img_wtf", onclick="toggle('wtf')">
 	<img id="img_atf", onclick="toggle('atf')">
@@ -41,19 +27,26 @@
 	<img id="img_pause6", onclick="toggle('pause6')">
   
 	</br>
-	
-	<button type="button" class="button" onclick="pull()" id="button">Position ziehen!</button>
-	</br>
   
-	<img id="img_pulled">
+	<img id="img_pulled", onclick="pull()">
 	
   
 	<script>
+		
+		width = document.body.offsetWidth;
+		height = window.innerHeight;
+		//console.log(width)
+		//console.log(height)
+		boxsize = (width - 40) / 8;
+		bigboxsize = boxsize * 8 + 24;
+		//console.log(boxsize)
+		
 		const positions = ["stf", "wtf", "atf", "ma", "gk", "pause0", "pause1", "pause2", 
 						   "stm", "wtm", "atm", "me", "pause3", "pause4", "pause5", "pause6"];
 	    const colors = ['rgba(255, 255, 0, 255)', 'rgba(0, 0, 255, 255)', 'rgba(255, 0, 0, 255)', 'rgba(255, 255, 255, 255)', 'rgba(255, 255, 255, 255)', 'rgba(255, 255, 255, 255)', 'rgba(255, 255, 255, 255)', 'rgba(255, 255, 255, 255)',
 						'rgba(255, 255, 0, 255)', 'rgba(0, 0, 255, 255)', 'rgba(255, 0, 0, 255)', 'rgba(255, 255, 255, 255)', 'rgba(255, 255, 255, 255)', 'rgba(255, 255, 255, 255)', 'rgba(255, 255, 255, 255)', 'rgba(255, 255, 255, 255)']
-	
+		
+		
 		const createImage = (boxsize, color, position, index) => {
 
 			const canvas = document.createElement('canvas')
@@ -71,16 +64,36 @@
 				ctx.fillText("P"+position.slice(-1), boxsize / 2 - text_width / 2, boxsize*0.63);
 			}
 			
-			ctx.beginPath();
-			let dx = boxsize / 10;
-			let dy = dx;
-			let radius = boxsize * 0.8 / 2;
-			ctx.arc(radius + dx, radius + dy, radius, 0, 2 * Math.PI, false);
-			ctx.lineWidth = boxsize / 10;
-			ctx.strokeStyle = '#000000';
-			ctx.stroke();
+			if (index >= 0){
+				ctx.beginPath();
+				let dx = boxsize / 10;
+				let dy = dx;
+				let radius = boxsize * 0.8 / 2;
+				ctx.arc(radius + dx, radius + dy, radius, 0, 2 * Math.PI, false);
+				ctx.lineWidth = boxsize / 10;
+				ctx.strokeStyle = '#000000';
+				ctx.stroke();
+			}
+			else{
+				ctx.font = boxsize*0.012+"em sans-serif";
+				ctx.fillStyle = "#000000"
+				if (position == "restart"){
+					text = "Neu starten!";
+					let metrics = ctx.measureText(text);
+					let text_width = metrics.width;
+					let text_height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+					ctx.fillText(text, boxsize / 2 - text_width / 2, boxsize / 2 + text_height / 2);
+				}
+				else if (position == "pull"){
+					text = "Position ziehen!";
+					let metrics = ctx.measureText(text);
+					let text_width = metrics.width;
+					let text_height = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+					ctx.fillText(text, boxsize / 2 - text_width / 2, boxsize / 2 + text_height / 2);
+				}
+			}
 			
-			if (index < 3){
+			if (index < 3 && index >= 0){
 				ctx.beginPath();
 				let dx = boxsize / 10;
 				let dy = dx;
@@ -136,11 +149,19 @@
 			return img
 		}
 		
+		let result_size = boxsize * 2 + 4;
+		if (height > width * 1.2){
+			result_size = bigboxsize;
+		}
+		const img_restart = createImage(result_size, "rgba(150, 150, 150, 255)", "restart", -1);
+		const img_pull = createImage(result_size, "rgba(150, 150, 150, 255)", "pull", -1);
+		img_pulled.src = img_pull.src;
+		
 		const toggle = (position) => {
 			if (available.includes(position)){
 				const index = available.indexOf(position);
-				if (index > -1) { // only splice array when item is found
-					available.splice(index, 1); // 2nd parameter means remove one item only
+				if (index > -1) {
+					available.splice(index, 1);
 				}
 				
 				var element = document.getElementById('img_'+position);
@@ -170,23 +191,18 @@
 				const img_el = document.getElementById("img_pulled");
 				const img_pulled = document.getElementById('img_'+position);
 				
-				img_el.src = img_pulled.src;
+				orig_index = positions.indexOf(available[index]);
 				
+				const img = createImage(result_size, colors[orig_index], positions[orig_index], orig_index);
+				img_el.src = img.src;
 				
 				toggle(position);
-				
-				if (available.length == 0){
-					const btn = document.getElementById("button");
-					btn.firstChild.data = "Neu Starten!";
-				}
 			}
 			else{
 				if (started){
-					const btn = document.getElementById("button");
-					btn.firstChild.data = "Position ziehen!";
 					started = false;
 					const img_el = document.getElementById("img_pulled");
-					img_el.src = "#";
+					img_el.src = img_pull.src;
 					for (let i = 0; i < startlist.length; i++){
 						toggle(startlist[i]);
 					}
@@ -195,18 +211,6 @@
 			}
 			
 		}
-
-		//const img1El = document.getElementById('img_stf')
-		//const img2El = document.getElementById('img_stf')
-		//const img1 = createImage(100, 50)
-		//const img2 = createImage(20, 50)
-		//img1El.src = img1.src
-		//img2El.src = img2.src
-		
-		width = document.body.offsetWidth;
-		//console.log(width)
-		boxsize = (width - 40) / 8;
-		//console.log(boxsize)
 		
 		for (let i = 0; i < positions.length; i++){
 			
